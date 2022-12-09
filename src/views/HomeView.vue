@@ -168,7 +168,7 @@ export default defineComponent({
         }
       } catch (err) {
         console.log(err);
-        ChatBotMessage({message: err, options:['gcloud auth print-access-token']})
+        ChatBotMessage({'Access Token is Expired for Localhost.. Defense Student needs to generate new one': err, options:['gcloud auth print-access-token']})
       }
     },
     OpenChat() {
