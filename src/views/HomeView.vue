@@ -17,7 +17,7 @@
     <v-dialog v-model="chat" class="" max-width="490">
       <div class="dialogg bg-white px-5 py-6">
         <div class="container-sm around message-wrap">
-          <div class="message" v-for="(i, index) in chats" :key="index">
+          <div   class="message" v-for="(i, index) in chats" :key="index">
             <div
               class="flex pa-4"
               :class="i.userId == 'user' ? 'flex-row-reverse' : ''"
@@ -44,6 +44,7 @@
                 </div>
               </div>
             </div>
+            
           </div>
           <div
             v-if="orderBox"
@@ -83,7 +84,7 @@
 
 <script>
 import { defineComponent } from "vue";
-
+import { nextTick } from "vue";
 import headerVue from "@/components/header.vue";
 import mainpageVue from "@/components/mainpage.vue";
 import { ChatBot } from "@/AICHATBOT/dialogflow";
@@ -114,6 +115,12 @@ export default defineComponent({
     chats: [],
   }),
   methods: {
+    MoveDown(){
+      const bottom = this.$refs.bottom;
+      nextTick(() => {
+        bottom.value?.scrollIntoView({ behavior: "smooth" });
+      });
+    },
     prepareOrder() {
       let i = 0;
       this.orderStatus = "Pending";
@@ -168,7 +175,11 @@ export default defineComponent({
         }
       } catch (err) {
         console.log(err);
-        ChatBotMessage({'Access Token is Expired for Localhost.. Defense Student needs to generate new one': err, options:['gcloud auth print-access-token']})
+        this.ChatBotMessage({
+          "Access Token is Expired for Localhost.. Defense Student needs to generate new one":
+            err,
+          options: ["gcloud auth print-access-token"],
+        });
       }
     },
     OpenChat() {
@@ -199,13 +210,27 @@ export default defineComponent({
       this.dform.userId = "user";
       this.chats.push(this.dform);
       this.TryIt(this.dform.message);
+      this.MoveDown()
       this.dform = {};
     },
     ChatBotMessage(message) {
       this.dform = message;
       this.dform.userId = "";
       this.chats.push(this.dform);
+      this.MoveDown()
       this.dform = {};
+    },
+  },
+  watch: {
+    chats(value, prev) {
+      console.log(value)
+      console.log(prev)
+      console.log(nextTick)
+      
+      // nextTick(() => {
+      //   bottom.value?.scrollIntoView({ behavior: "smooth" });
+      //   console.log('working')
+      // });
     },
   },
 });

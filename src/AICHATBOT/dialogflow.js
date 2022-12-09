@@ -12,7 +12,7 @@ async function ChatBot(word) {
         headers: {
           "Content-Type": "application/json",
           Authorization:
-            "Bearer ya29.a0AeTM1idrvqp-FDFT7id3jdJFg-yhTzkW19QbW498wTHLT5ChDmH7MQsXoZLImVqX-A_loecoAJ47gfnnFEfTu8qY3ej6M38EN6vniFPXaVpNkqC20gaaN6RRbehRC6Oonc9muFIZmhCOBAIeHs_KaFqmcu9aMXEuYphaaCgYKAUUSARASFQHWtWOm8QrjglB0861Q9x9KWFL4Xg0171",
+            "Bearer ya29.a0AeTM1iewTqQO0DJ-v0_3XPoSBzrUWuDKhsO86CaA7kelKInlSeFYasOaUVOK9NVABoLTEsXQpQuIsdasX0k2TIn730dCU3_OURQ0F5V4gAYAvs7FQ6RQq1W7NH1wv64AZSrZE1iOkugLWjqScnx7X6E26k2Ow3wwAoqIpQaCgYKAeQSARASFQHWtWOmeTgsTFHzza80H6nAdo5tJQ0173",
           "x-goog-user-project": "eatrychatbot-axde",
         },
         redirect: "follow",
