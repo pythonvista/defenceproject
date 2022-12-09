@@ -168,6 +168,7 @@ export default defineComponent({
         }
       } catch (err) {
         console.log(err);
+        ChatBotMessage({message: err, options:['gcloud auth print-access-token']})
       }
     },
     OpenChat() {
