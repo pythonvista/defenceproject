@@ -17,12 +17,11 @@
     <v-dialog v-model="chat" class="" max-width="490">
       <div class="dialogg bg-white px-5 py-6">
         <div class="container-sm around message-wrap">
-          <div   class="message" v-for="(i, index) in chats" :key="index">
+          <div class="message" v-for="(i, index) in chats" :key="index">
             <div
               class="flex pa-4"
               :class="i.userId == 'user' ? 'flex-row-reverse' : ''"
             >
-              <Avatar class="mt-1" />
               <div
                 class="px-8 py-2 cover rounded flex flex-col"
                 :class="i.userId == 'user' ? 'bg-green-800' : 'bg-gray-700'"
@@ -44,18 +43,20 @@
                 </div>
               </div>
             </div>
-            
           </div>
           <div
             v-if="orderBox"
             class="orderbox flex flex-col justify-center items-center"
           >
-            <p class="ma-0 pa-0 font-bold">Tracking Order For {{ transRef }}</p>
+            <p class="ma-0 pa-0 font-bold">Tracking Order For {{ currentOrder.trans }}</p>
             <p class="ma-0 pa-0 font-bold">
-              Order Status For: {{ currentOrder }}
+              Order Status For: {{ currentOrder.Food  }} <span v-if="!justFood">and</span> {{currentOrder.Drink}}
             </p>
             <p class="ma-0 pa-0 text-primary text-base">
               Status: {{ orderStatus }}
+            </p>
+            <p class="ma-0 pa-0 px-4 text-red-500 text-center" v-if="orderStatus == 'Delivered'">
+              Hurray Your Order for {{ currentOrder.Food  }} <span v-if="!justFood">and</span> {{currentOrder.Drink}} with Transaction Ref of {{ currentOrder.trans }} has being succesfully deliverd to you 
             </p>
           </div>
         </div>
@@ -79,12 +80,134 @@
         </div>
       </div>
     </v-dialog>
+    <v-dialog v-model="paymentModal" persistent max-width="400">
+      <div class="pa-5 bg-white flex gap-1 justify-start items-center flex-col">
+        <p class="ma-0 pa-0 text-lg font-bold">
+          Checkout The Order <v-icon>mdi-cart</v-icon>
+        </p>
+        <v-divider class="w-full h-10 bg-black"></v-divider>
+        <p class="ma-0 pa-0">Transaction Ref: {{ currentOrder.trans}}</p>
+        <p class="ma-0 pa-0">Food Name: {{ currentOrder.Food }} Price: ₦5000</p>
+        <p class="ma-0 pa-0" v-if="!justFood">
+          Drink Name: {{ currentOrder.Drink }} Price: ₦4000
+        </p>
+
+        <div 
+          v-if="isOptionSelected"
+          @click="ChoosePayment('card')"
+          class="pa-3 w-full gap-2 cursor-pointer flex justify-center items-center border-2 border-solid hover:bg-black hover:border-white hover:text-white border-black mb-2"
+        >
+          <v-icon>mdi-cards</v-icon>Pay with card
+        </div>
+        <div
+          v-if="isOptionSelected"
+          @click="ChoosePayment('account')"
+          class="pa-3 w-full cursor-pointer gap2 flex justify-center items-center border-2 border-black hover:bg-black hover:border-white hover:text-white border-solid"
+        >
+          <v-icon>mdi-bank</v-icon>Pay with Account
+        </div>
+        
+        <v-form ref="form" class="flex w-full flex-col items-center justify-center">
+          <v-text-field
+            v-if="
+              optionSelectedType == 'card' || optionSelectedType == 'account'
+            "
+            :rules="inputRules"
+            v-model="email"
+            dense
+            class="ma-0 pa-0 w-full"
+            label="Email"
+            variant="solo"
+          ></v-text-field>
+          <v-text-field
+            v-if="
+              optionSelectedType == 'card' || optionSelectedType == 'account'
+            "
+            v-model="location"
+            :rules="inputRules"
+            variant="solo"
+            label="Location"
+            class="w-full"
+          ></v-text-field>
+          <v-text-field
+            v-if="optionSelectedType == 'card'"
+            v-model="card_detail"
+            variant="solo"
+            :rules="inputRules"
+            label="Card Details"
+            class="w-full"
+          >
+          </v-text-field>
+          <v-text-field
+            v-if="optionSelectedType == 'account'"
+            v-model="card_detail"
+            variant="solo"
+            label="Account Id"
+            :rules="inputRules"
+            class="w-full"
+          >
+          </v-text-field>
+          <v-text-field
+            v-if="optionSelectedType == 'account'"
+            v-model="csc"
+            variant="solo"
+            label="Account Pin"
+            :rules="inputRules"
+            class="w-full"
+          >
+          </v-text-field>
+          <div
+            v-if="optionSelectedType == 'card'"
+            class="grid gap-2 w-full grid-cols-2 place-items-center"
+          >
+            <v-text-field
+              v-model="expiry"
+              variant="solo"
+              class="w-full"
+              label="Expiry Date YYMM"
+              :rules="inputRules"
+            ></v-text-field>
+            <v-text-field
+              v-model="csc"
+              variant="solo"
+              class="w-full"
+              :rules="inputRules"
+              label="CSC"
+            ></v-text-field>
+          </div>
+          <v-btn
+            v-if="
+              optionSelectedType == 'card' || optionSelectedType == 'account'
+            "
+            @click="PayNow()"
+            :disabled="valid"
+            :loading="loading"
+            color="blue"
+            size="small"
+            >Pay Now</v-btn
+          >
+          <div class="flex mt-2 justify-center items-center gap-1 w-full">
+            <v-btn
+              @click="ChangePaymet()"
+              v-if="
+                optionSelectedType == 'card' || optionSelectedType == 'account'
+              "
+              color="green"
+              size="small"
+              >Change Payment</v-btn
+            >
+            <v-btn @click="CancelOrder" color="red" size="small"
+              >Cancel Order</v-btn
+            >
+          </div>
+        </v-form>
+      </div>
+    </v-dialog>
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
-import { nextTick } from "vue";
 import headerVue from "@/components/header.vue";
 import mainpageVue from "@/components/mainpage.vue";
 import { ChatBot } from "@/AICHATBOT/dialogflow";
@@ -94,15 +217,31 @@ export default defineComponent({
     headerVue,
     mainpageVue,
   },
-  created() {},
+  computed: {
+    valid() {
+      if(this.$refs.form.validate()){
+        return false
+      }
+      return true
+    },
+  },
   data: () => ({
     type: "default",
+    paymentModal: false,
+    inputRules: [
+    (v) => (v && v.length >= 1) || 'Field is required'
+  ],
     chat: false,
     open: false,
     transRef: "MTR" + Math.floor(Math.random() * 907947904292),
     loading: false,
     orderStatus: "",
-    currentOrder: "",
+    currentFood: "",
+    currentDrink: "",
+    isOptionSelected: true,
+    optionSelectedType: "",
+    currentOrder: {},
+    justFood: false,
     orderBox: false,
     orderInfo: [
       "Preparing the order",
@@ -110,22 +249,27 @@ export default defineComponent({
       "Shiping the order",
       "Delivered",
     ],
+    email: "",
+    location: "",
+    card_detail: "",
+    expiry: "",
+    csc: "",
     dform: {},
     interval: 0,
     chats: [],
   }),
   methods: {
-    MoveDown(){
-      const bottom = this.$refs.bottom;
-      nextTick(() => {
-        bottom.value?.scrollIntoView({ behavior: "smooth" });
-      });
-    },
     prepareOrder() {
+     
       let i = 0;
       this.orderStatus = "Pending";
       setInterval(() => {
         if (i == this.orderInfo.length) {
+          setTimeout(()=>{
+            this.currentFood = ""
+            this.currentDrink = {}
+          }, 5000)
+         
           clearInterval(this.interval);
         } else {
           this.orderStatus = this.orderInfo[i];
@@ -137,49 +281,93 @@ export default defineComponent({
       try {
         let res = await ChatBot(message);
         let data = await res.json();
+        console.log(data);
         let finalResponse = data.queryResult.fulfillmentMessages[0].payload;
-        this.ChatBotMessage(finalResponse);
-        if (
-          (finalResponse.message == finalResponse.message) ==
-            "You want Rice and Beans With Bottle Coke. That Costs ₦5000" ||
-          finalResponse.message ==
-            "You want Semo and Egusi. That Costs ₦8000" ||
-          finalResponse.message ==
-            "You want Jollof Rice with Red Wine. That Costs ₦3000"
-        ) {
-          this.transRef = "MTR" + Math.floor(Math.random() * 907947904292);
-          this.currentOrder = finalResponse.message;
-        }
-        if (
-          finalResponse.message ==
-          "We have placed your order. You can track your order by saying track order"
-        ) {
-          this.prepareOrder();
-          return;
-        }
-        if (finalResponse.message == "Tracking Current Order") {
-          if (this.currentOrder == "") {
-            this.ChatBotMessage({ message: "You have no Current Order" });
-            return;
-          } else {
-            this.orderBox = true;
+        if (data.queryResult.parameters.isDrink == "isDrink") {
+          if (this.currentFood == "") {
+            this.ChatBotMessage({
+              message: "You have not selected any food",
+              userId: "",
+            });
+            this.TryIt("Order Food");
             return;
           }
         }
-        if (finalResponse.message == "Your Current order has being cancled") {
-          this.currentOrder = "";
-          this.orderStatus == "";
-          clearInterval(this.interval);
-          this.orderBox = false;
+        if (data.queryResult.parameters.noDrink == "noDrink") {
+          if (this.currentFood == "") {
+            this.ChatBotMessage({
+              message: "You have not selected any food",
+              userId: "",
+            });
+            this.TryIt("Order Food");
+            return;
+          }else{
+            this.justFood = true
+            this.ChatBotMessage(finalResponse);
+            this.TryIt('Proceeding to payment')
+            return
+          }
+        }
+        if (data.queryResult.parameters.selectedFood == "selectedFood") {
+          this.ChatBotMessage(finalResponse);
+          this.transRef = "MTR" + Math.floor(Math.random() * 907947904292);
+          this.currentFood = data.queryResult.intent.displayName;
+          this.currentOrder.trans = this.transRef
+          this.currentOrder.Food = this.currentFood
           return;
         }
+        if (data.queryResult.parameters.selectedDrink == "selectedDrink") {
+          this.ChatBotMessage(finalResponse);
+          this.currentDrink = data.queryResult.intent.displayName;
+          this.currentOrder = {
+            Food: this.currentFood,
+            Drink: this.currentDrink,
+            trans: this.transRef,
+          };
+          return;
+        }
+        if (data.queryResult.parameters.isPayment == "isPayment") {
+          this.ChatBotMessage(finalResponse);
+          setTimeout(() => {
+            this.chat = false;
+            this.paymentModal = true;
+          }, 2000);
+          return;
+        }
+        if (data.queryResult.parameters.isTrack == "isTrack") {
+          this.ChatBotMessage(finalResponse)
+          if (!this.currentOrder.trans) {
+            this.ChatBotMessage({
+              message: "You have no Order",
+              userId: "",
+            });
+            return;
+          }else{
+            this.orderBox = true
+            this.prepareOrder()
+            return;
+          }
+          
+          
+        }
+        if (data.queryResult.parameters.isCancel == "isCancel") {
+          if (this.currentOrder.Food && this.currentOrder.Drink) {
+            this.ChatBotMessage(finalResponse);
+            this.paymentModal = false;
+            (this.currentFood = ""),
+              (this.currentDrink = ""),
+              (this.currentOrder = {});
+            this.chats = [];
+            this.chat = true;
+            return
+          }else{
+            this.ChatBotMessage({message: "You have no current order."});
+            return
+          }
+        }
+        this.ChatBotMessage(finalResponse);
       } catch (err) {
         console.log(err);
-        this.ChatBotMessage({
-          "Access Token is Expired for Localhost.. Defense Student needs to generate new one":
-            err,
-          options: ["gcloud auth print-access-token"],
-        });
       }
     },
     OpenChat() {
@@ -193,45 +381,56 @@ export default defineComponent({
       }
     },
     UserMessage(message) {
-      console.log(message);
-      if (
-        message == "Rice and beans with Bottle Coke" ||
-        message == "Semo and Egusi Soup" ||
-        message == "Jollof Rice with Red Wine" ||
-        message ==
-          "You want Rice and Beans With Bottle Coke. That Costs ₦5000" ||
-        message == "You want Semo and Egusi. That Costs ₦8000" ||
-        message == "You want Jollof Rice with Red Wine. That Costs ₦3000"
-      ) {
-        this.transRef = "MTR" + Math.floor(Math.random() * 907947904292);
-        this.currentOrder = message;
-      }
       this.dform.message = message;
       this.dform.userId = "user";
       this.chats.push(this.dform);
       this.TryIt(this.dform.message);
-      this.MoveDown()
       this.dform = {};
     },
     ChatBotMessage(message) {
       this.dform = message;
       this.dform.userId = "";
       this.chats.push(this.dform);
-      this.MoveDown()
       this.dform = {};
     },
-  },
-  watch: {
-    chats(value, prev) {
-      console.log(value)
-      console.log(prev)
-      console.log(nextTick)
-      
-      // nextTick(() => {
-      //   bottom.value?.scrollIntoView({ behavior: "smooth" });
-      //   console.log('working')
-      // });
+    ChoosePayment(type) {
+      this.isOptionSelected = false;
+      this.optionSelectedType = type;
     },
+    ChangePaymet() {
+      this.isOptionSelected = true;
+      this.optionSelectedType = "";
+    },
+    CancelOrder() {
+      this.paymentModal = false;
+      (this.currentFood = ""),
+        (this.currentDrink = ""),
+        (this.currentOrder = {});
+
+      this.chats = [];
+      this.chat = true;
+      this.ChatBotMessage({ message: "Order Sucessfully Canceled" });
+      this.ChatBotMessage({
+        message: "Is there any thing i can help you with.",
+      });
+    },
+    PayNow(){
+      if(this.$refs.form.validate()){
+        this.loading = true
+        setTimeout(()=>{
+          this.loading= false
+          this.paymentModal = false
+          this.chats = []
+          this.chat = true
+          this.ChatBotMessage({message:'Processing Payment.....'})
+          
+        },3000)
+        setTimeout(()=>{
+          this.ChatBotMessage({message:'Payment Succesfull. You can track your order by typing Track Order',options: ['Track order']})
+          
+        }, 6000)
+      }
+    }
   },
 });
 </script>

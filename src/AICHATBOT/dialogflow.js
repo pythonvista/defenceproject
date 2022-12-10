@@ -1,9 +1,9 @@
 async function ChatBot(word) {
   let sessionID = Math.floor(Math.random() * 378974206843640 + 36893787392073);
-//   let auths = gcloud auth print-access-token;
+  //   let auths = gcloud auth print-access-token;
   try {
     const response = await fetch(
-      `https://dialogflow.googleapis.com/v2/projects/eatrychatbot-axde/agent/sessions/${sessionID}:detectIntent`,
+      `https://dialogflow.googleapis.com/v2/projects/defense-project-chatbot/agent/sessions/${sessionID}:detectIntent`,
       {
         method: "POST",
         mode: "cors",
@@ -12,8 +12,8 @@ async function ChatBot(word) {
         headers: {
           "Content-Type": "application/json",
           Authorization:
-            "Bearer ya29.a0AeTM1iewTqQO0DJ-v0_3XPoSBzrUWuDKhsO86CaA7kelKInlSeFYasOaUVOK9NVABoLTEsXQpQuIsdasX0k2TIn730dCU3_OURQ0F5V4gAYAvs7FQ6RQq1W7NH1wv64AZSrZE1iOkugLWjqScnx7X6E26k2Ow3wwAoqIpQaCgYKAeQSARASFQHWtWOmeTgsTFHzza80H6nAdo5tJQ0173",
-          "x-goog-user-project": "eatrychatbot-axde",
+            "Bearer ya29.a0AeTM1idwiYXPirM273kRcn3rGpZoYzEOK0_QF22DsY-GHTNYVnbmn8T3j0F9Zikkz174Pa6QsEyozOND6Pq67-WQ_89df9LDZWxg2HkZdcMf4TbDoOE1fK63R8wm7iGy2_6ngjOGM-mkN5vfmMY69nl___c-6eoqp5hcdAaCgYKARcSARISFQHWtWOmj5F3mxxAcVDLtIfO807rdQ0173",
+          "x-goog-user-project": "defense-project-chatbot",
         },
         redirect: "follow",
         referrerPolicy: "no-referrer",
